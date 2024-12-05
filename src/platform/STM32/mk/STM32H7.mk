@@ -209,7 +209,7 @@ endif
 else ifeq ($(TARGET_MCU),STM32H735xx)
 DEVICE_FLAGS       += -DSTM32H735xx
 DEFAULT_LD_SCRIPT   = $(LINKER_DIR)/stm32_flash_h735_1m.ld
-STARTUP_SRC         = startup/startup_stm32h735xx.s
+STARTUP_SRC         = STM32/startup/startup_stm32h735xx.s
 DEFAULT_TARGET_FLASH := 1024
 DEVICE_FLAGS       += -DMAX_MPU_REGIONS=16
 
