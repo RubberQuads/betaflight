@@ -66,6 +66,8 @@ mcuTypeId_e getMcuTypeId(void)
     return MCU_TYPE_H7A3;
 #elif defined(STM32H723xx) || defined(STM32H725xx)
     return MCU_TYPE_H723_725;
+#elif defined(STM32H735xx)
+    return MCU_TYPE_H735;
 #elif defined(STM32G474xx)
     return MCU_TYPE_G474;
 #elif defined(AT32F435)
