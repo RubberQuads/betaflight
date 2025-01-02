@@ -74,11 +74,13 @@ extern const char * const osdTimerSourceNames[OSD_NUM_TIMER_TYPES];
 #define OSD_POSITION_XHD_MASK   (1 << OSD_POSITION_BIT_XHD)
 #define OSD_POSITION_XY_MASK    ((1 << OSD_POSITION_BITS) - 1)
 #define OSD_TYPE_MASK           0xC000  // bits 14-15
-#define OSD_POS(x,y)  ((x & OSD_POSITION_XY_MASK) | ((x << (OSD_POSITION_BIT_XHD - OSD_POSITION_BITS)) & OSD_POSITION_XHD_MASK) | \
-                       ((y & OSD_POSITION_XY_MASK) << OSD_POSITION_BITS))
-#define OSD_X(x)      ((x & OSD_POSITION_XY_MASK) | ((x & OSD_POSITION_XHD_MASK) >> (OSD_POSITION_BIT_XHD - OSD_POSITION_BITS)))
-#define OSD_Y(x)      ((x >> OSD_POSITION_BITS) & OSD_POSITION_XY_MASK)
-#define OSD_TYPE(x)   ((x & OSD_TYPE_MASK) >> 14)
+#define OSD_POS(x, y)  (((x) & OSD_POSITION_XY_MASK)                    \
+                        | (((x) << (OSD_POSITION_BIT_XHD - OSD_POSITION_BITS)) & OSD_POSITION_XHD_MASK) \
+                        | (((y) & OSD_POSITION_XY_MASK) << OSD_POSITION_BITS)) \
+    /**/
+#define OSD_X(x)      (((x) & OSD_POSITION_XY_MASK) | (((x) & OSD_POSITION_XHD_MASK) >> (OSD_POSITION_BIT_XHD - OSD_POSITION_BITS)))
+#define OSD_Y(x)      (((x) >> OSD_POSITION_BITS) & OSD_POSITION_XY_MASK)
+#define OSD_TYPE(x)   (((x) & OSD_TYPE_MASK) >> 14)
 
 #define OSD_SD_COLS VIDEO_COLUMNS_SD
 #define OSD_SD_ROWS VIDEO_LINES_PAL
@@ -188,6 +190,10 @@ typedef enum {
     OSD_GPS_LAP_TIME_PREVIOUS,
     OSD_GPS_LAP_TIME_BEST3,
     OSD_DEBUG2,
+    OSD_CUSTOM_MSG0,
+    OSD_CUSTOM_MSG1,
+    OSD_CUSTOM_MSG2,
+    OSD_CUSTOM_MSG3,
     OSD_ITEM_COUNT // MUST BE LAST
 } osd_items_e;
 
@@ -281,6 +287,7 @@ typedef enum {
     OSD_WARNING_OVER_CAP,
     OSD_WARNING_RSNR,
     OSD_WARNING_LOAD,
+    OSD_WARNING_POSHOLD_FAILED,
     OSD_WARNING_COUNT // MUST BE LAST
 } osdWarningsFlags_e;
 

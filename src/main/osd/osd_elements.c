@@ -161,6 +161,7 @@
 #include "osd/osd_warnings.h"
 
 #include "pg/motor.h"
+#include "pg/pilot.h"
 #include "pg/stats.h"
 
 #include "rx/rx.h"
@@ -810,6 +811,18 @@ static void osdElementCompassBar(osdElementParms_t *element)
     element->buff[9] = 0;
 }
 
+//display custom message from MSPv2
+static void osdElementCustomMsg(osdElementParms_t *element)
+{
+    int msgIndex = element->item - OSD_CUSTOM_MSG0;
+    if (msgIndex < 0 || msgIndex >= OSD_CUSTOM_MSG_COUNT || pilotConfig()->message[msgIndex][0] == '\0') {
+        tfp_sprintf(element->buff, "CUSTOM_MSG%d", msgIndex + 1);
+    } else {
+        strncpy(element->buff, pilotConfig()->message[msgIndex], MAX_NAME_LENGTH);
+        element->buff[MAX_NAME_LENGTH] = 0;   // terminate maximum-length string
+    }
+}
+
 #ifdef USE_ADC_INTERNAL
 static void osdElementCoreTemperature(osdElementParms_t *element)
 {
@@ -887,6 +900,7 @@ static void osdElementCrashFlipArrow(osdElementParms_t *element)
     }
 
     if ((isCrashFlipModeActive() || (!ARMING_FLAG(ARMED) && !isUpright())) && !((imuConfig()->small_angle < 180 && isUpright()) || (rollAngle == 0 && pitchAngle == 0))) {
+        element->attr = DISPLAYPORT_SEVERITY_INFO;
         if (abs(pitchAngle) < 2 * abs(rollAngle) && abs(rollAngle) < 2 * abs(pitchAngle)) {
             if (pitchAngle > 0) {
                 if (rollAngle > 0) {
@@ -1048,7 +1062,7 @@ static void osdElementFlymode(osdElementParms_t *element)
     //  1. FS
     //  2. GPS RESCUE
     //  3. PASSTHRU
-    //  4. ANGLE, HORIZON, ACRO TRAINER, ALTHOLD
+    //  4. HEAD, POSHOLD, ALTHOLD, ANGLE, HORIZON, ACRO TRAINER
     //  5. AIR
     //  6. ACRO
 
@@ -1060,10 +1074,12 @@ static void osdElementFlymode(osdElementParms_t *element)
         strcpy(element->buff, "HEAD");
     } else if (FLIGHT_MODE(PASSTHRU_MODE)) {
         strcpy(element->buff, "PASS");
-    } else if (FLIGHT_MODE(ANGLE_MODE)) {
-        strcpy(element->buff, "ANGL");
     } else if (FLIGHT_MODE(ALT_HOLD_MODE)) {
         strcpy(element->buff, "ALTH");
+    } else if (FLIGHT_MODE(POS_HOLD_MODE)) {
+        strcpy(element->buff, "POSH");
+    } else if (FLIGHT_MODE(ANGLE_MODE)) {
+        strcpy(element->buff, "ANGL");
     } else if (FLIGHT_MODE(HORIZON_MODE)) {
         strcpy(element->buff, "HOR ");
     } else if (IS_RC_MODE_ACTIVE(BOXACROTRAINER)) {
@@ -1165,7 +1181,7 @@ static void osdElementGpsSats(osdElementParms_t *element)
     }
 #endif
     else {
-        element->attr = DISPLAYPORT_SEVERITY_INFO;
+        element->attr = DISPLAYPORT_SEVERITY_NORMAL;
     }
 
     if (!gpsIsHealthy()) {
@@ -1801,6 +1817,10 @@ static const uint8_t osdElementDisplayOrder[] = {
     OSD_MAH_DRAWN,
     OSD_WATT_HOURS_DRAWN,
     OSD_CRAFT_NAME,
+    OSD_CUSTOM_MSG0,
+    OSD_CUSTOM_MSG1,
+    OSD_CUSTOM_MSG2,
+    OSD_CUSTOM_MSG3,
     OSD_ALTITUDE,
     OSD_ROLL_PIDS,
     OSD_PITCH_PIDS,
@@ -1899,6 +1919,10 @@ const osdElementDrawFn osdElementDrawFunction[OSD_ITEM_COUNT] = {
     [OSD_ITEM_TIMER_2]            = osdElementTimer,
     [OSD_FLYMODE]                 = osdElementFlymode,
     [OSD_CRAFT_NAME]              = NULL,  // only has background
+    [OSD_CUSTOM_MSG0]             = osdElementCustomMsg,
+    [OSD_CUSTOM_MSG1]             = osdElementCustomMsg,
+    [OSD_CUSTOM_MSG2]             = osdElementCustomMsg,
+    [OSD_CUSTOM_MSG3]             = osdElementCustomMsg,
     [OSD_THROTTLE_POS]            = osdElementThrottlePosition,
 #ifdef USE_VTX_COMMON
     [OSD_VTX_CHANNEL]             = osdElementVtxChannel,

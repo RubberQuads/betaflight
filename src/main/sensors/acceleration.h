@@ -31,14 +31,11 @@
 #include "sensors/sensors.h"
 
 // Type of accelerometer used/detected
+// Acc hardware types were updated in PR #14087 (removed ACC_ADXL345, ACC_MMA8452, ACC_BMA280, ACC_LSM303DLHC)
 typedef enum {
     ACC_DEFAULT,
     ACC_NONE,
-    ACC_ADXL345,
     ACC_MPU6050,
-    ACC_MMA8452,
-    ACC_BMA280,
-    ACC_LSM303DLHC,
     ACC_MPU6000,
     ACC_MPU6500,
     ACC_MPU9250,
@@ -74,7 +71,7 @@ typedef struct rollAndPitchTrims_s {
 } rollAndPitchTrims_t_def;
 
 typedef union rollAndPitchTrims_u {
-    int16_t raw[2];
+    int16_t raw[RP_AXIS_COUNT];
     rollAndPitchTrims_t_def values;
 } rollAndPitchTrims_t;
 

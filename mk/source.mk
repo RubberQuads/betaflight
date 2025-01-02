@@ -1,7 +1,9 @@
 PG_SRC = \
             pg/adc.c \
-            pg/alt_hold.c \
-            pg/autopilot.c \
+            pg/alt_hold_multirotor.c \
+            pg/alt_hold_wing.c \
+            pg/autopilot_multirotor.c \
+            pg/autopilot_wing.c \
             pg/beeper.c \
             pg/beeper_dev.c \
             pg/board.c \
@@ -15,16 +17,20 @@ PG_SRC = \
             pg/gimbal.c \
             pg/gps.c \
             pg/gps_lap_timer.c \
-            pg/gps_rescue.c \
+            pg/gps_rescue_multirotor.c \
+            pg/gps_rescue_wing.c \
             pg/gyrodev.c \
             pg/max7456.c \
             pg/mco.c \
             pg/motor.c \
             pg/msp.c \
             pg/pg.c \
+            pg/pilot.c \
             pg/piniobox.c \
             pg/pinio.c \
             pg/pin_pull_up_down.c \
+            pg/pos_hold_multirotor.c \
+            pg/pos_hold_wing.c \
             pg/rcdevice.c \
             pg/rpm_filter.c \
             pg/rx.c \
@@ -152,11 +158,14 @@ COMMON_SRC = \
             fc/rc_adjustments.c \
             fc/rc_controls.c \
             fc/rc_modes.c \
-            flight/alt_hold.c \
-            flight/autopilot.c \
+            flight/alt_hold_multirotor.c \
+            flight/alt_hold_wing.c \
+            flight/autopilot_multirotor.c \
+            flight/autopilot_wing.c \
             flight/dyn_notch_filter.c \
             flight/failsafe.c \
-            flight/gps_rescue.c \
+            flight/gps_rescue_multirotor.c \
+            flight/gps_rescue_wing.c \
             flight/imu.c \
             flight/mixer.c \
             flight/mixer_init.c \
@@ -164,6 +173,8 @@ COMMON_SRC = \
             flight/pid.c \
             flight/pid_init.c \
             flight/position.c \
+            flight/pos_hold_multirotor.c \
+            flight/pos_hold_wing.c \
             flight/rpm_filter.c \
             flight/servos.c \
             flight/servos_tricopter.c \
@@ -207,7 +218,8 @@ COMMON_SRC = \
             cms/cms_menu_blackbox.c \
             cms/cms_menu_failsafe.c \
             cms/cms_menu_firmware.c \
-            cms/cms_menu_gps_rescue.c \
+            cms/cms_menu_gps_rescue_multirotor.c \
+            cms/cms_menu_gps_rescue_wing.c \
             cms/cms_menu_gps_lap_timer.c \
             cms/cms_menu_imu.c \
             cms/cms_menu_ledstrip.c \
@@ -250,6 +262,7 @@ COMMON_SRC = \
             osd/osd_warnings.c \
             sensors/barometer.c \
             sensors/rangefinder.c \
+            sensors/opticalflow.c \
             telemetry/telemetry.c \
             telemetry/crsf.c \
             telemetry/ghst.c \
@@ -277,7 +290,6 @@ ifneq ($(SIMULATOR_BUILD),yes)
 COMMON_SRC += \
             drivers/bus_spi.c \
             drivers/serial_uart.c \
-            drivers/accgyro/accgyro_mpu3050.c \
             drivers/accgyro/accgyro_mpu6050.c \
             drivers/accgyro/accgyro_mpu6500.c \
             drivers/accgyro/accgyro_mpu.c \
@@ -318,24 +330,6 @@ COMMON_SRC += \
             drivers/max7456.c \
             drivers/vtx_rtc6705.c \
             drivers/vtx_rtc6705_soft_spi.c
-
-ifneq ($(GYRO_DEFINE),)
-
-LEGACY_GYRO_DEFINES := USE_GYRO_L3GD20
-ifneq ($(findstring $(GYRO_DEFINE),$(LEGACY_GYRO_DEFINES)),)
-
-LEGACY_SRC := \
-            drivers/accgyro/legacy/accgyro_adxl345.c \
-            drivers/accgyro/legacy/accgyro_bma280.c \
-            drivers/accgyro/legacy/accgyro_l3g4200d.c \
-            drivers/accgyro/legacy/accgyro_lsm303dlhc.c \
-            drivers/accgyro/legacy/accgyro_mma845x.c
-
-COMMON_SRC += $(LEGACY_SRC)
-SPEED_OPTIMISED_SRC += $(LEGACY_SRC)
-
-endif
-endif
 
 RX_SRC = \
             drivers/rx/expresslrs_driver.c \
@@ -389,13 +383,29 @@ SIZE_OPTIMISED_SRC += \
             drivers/accgyro/accgyro_spi_mpu9250.c \
             drivers/accgyro/accgyro_spi_icm20689.c \
             drivers/accgyro/accgyro_spi_icm426xx.c \
-            drivers/accgyro/accgyro_spi_lsm6dso_init.c
+            drivers/accgyro/accgyro_spi_lsm6dso_init.c \
+            drivers/barometer/barometer_bmp085.c \
+            drivers/barometer/barometer_bmp280.c \
+            drivers/barometer/barometer_ms5611.c \
+            drivers/barometer/barometer_lps.c \
+            drivers/barometer/barometer_qmp6988.c \
+            drivers/barometer/barometer_2smpb_02b.c \
+            drivers/compass/compass_ak8963.c \
+            drivers/compass/compass_ak8975.c \
+            drivers/compass/compass_hmc5883l.c \
+            drivers/compass/compass_qmc5883l.c \
+            drivers/compass/compass_lis2mdl.c \
+            drivers/compass/compass_lis3mdl.c \
+            drivers/compass/compass_ist8310.c \
+            drivers/display_ug2864hsweg01.c \
+            drivers/vtx_rtc6705_soft_spi.c \
+            drivers/vtx_rtc6705.c
+
 
 SPEED_OPTIMISED_SRC += \
             drivers/bus_spi.c \
             drivers/serial_uart.c \
             drivers/accgyro/accgyro_mpu.c \
-            drivers/accgyro/accgyro_mpu3050.c \
             drivers/accgyro/accgyro_spi_bmi160.c \
             drivers/accgyro/accgyro_spi_bmi270.c \
             drivers/accgyro/accgyro_spi_lsm6dso.c
@@ -465,41 +475,14 @@ SPEED_OPTIMISED_SRC += \
             $(CMSIS_SRC) \
             $(DEVICE_STDPERIPH_SRC) \
 
-SIZE_OPTIMISED_SRC := $(SIZE_OPTIMISED_SRC) \
-            $(shell find $(SRC_DIR) -name '*_init.c') \
-            bus_bst_stm32f30x.c \
+SIZE_OPTIMISED_SRC += \
+            sensors/gyro_init.c \
+            sensors/acceleration_init.c \
+            flight/pid_init.c \
+            flight/mixer_init.c \
             cli/cli.c \
             cli/settings.c \
-            drivers/accgyro/accgyro_fake.c \
-            drivers/barometer/barometer_bmp085.c \
-            drivers/barometer/barometer_bmp280.c \
-            drivers/barometer/barometer_fake.c \
-            drivers/barometer/barometer_ms5611.c \
-            drivers/barometer/barometer_lps.c \
-            drivers/barometer/barometer_qmp6988.c \
-            drivers/barometer/barometer_2smpb_02b.c \
-            drivers/bus_i2c_config.c \
-            drivers/bus_i2c_timing.c \
-            drivers/bus_spi_config.c \
-            drivers/bus_spi_pinconfig.c \
-            drivers/compass/compass_ak8963.c \
-            drivers/compass/compass_ak8975.c \
-            drivers/compass/compass_fake.c \
-            drivers/compass/compass_hmc5883l.c \
-            drivers/compass/compass_qmc5883l.c \
-            drivers/compass/compass_lis2mdl.c \
-            drivers/compass/compass_lis3mdl.c \
-            drivers/compass/compass_ist8310.c \
-            drivers/display_ug2864hsweg01.c \
-            drivers/inverter.c \
             drivers/light_ws2811strip.c \
-            drivers/serial_escserial.c \
-            drivers/serial_pinconfig.c \
-            drivers/serial_tcp.c \
-            drivers/serial_uart_pinconfig.c \
-            drivers/serial_usb_vcp.c \
-            drivers/vtx_rtc6705_soft_spi.c \
-            drivers/vtx_rtc6705.c \
             drivers/vtx_common.c \
             fc/init.c \
             fc/board_info.c \
@@ -507,7 +490,6 @@ SIZE_OPTIMISED_SRC := $(SIZE_OPTIMISED_SRC) \
             config/feature.c \
             config/config_streamer.c \
             config/simplified_tuning.c \
-            i2c_bst.c \
             io/dashboard.c \
             io/serial.c \
             io/serial_4way.c \
@@ -520,7 +502,8 @@ SIZE_OPTIMISED_SRC := $(SIZE_OPTIMISED_SRC) \
             cms/cms_menu_blackbox.c \
             cms/cms_menu_failsafe.c \
             cms/cms_menu_firmware.c \
-            cms/cms_menu_gps_rescue.c \
+            cms/cms_menu_gps_rescue_multirotor.c \
+            cms/cms_menu_gps_rescue_wing.c \
             cms/cms_menu_gps_lap_timer.c \
             cms/cms_menu_imu.c \
             cms/cms_menu_ledstrip.c \
@@ -548,9 +531,6 @@ SIZE_OPTIMISED_SRC := $(SIZE_OPTIMISED_SRC) \
             rx/rx_bind.c \
             io/vtx_msp.c \
             cms/cms_menu_vtx_msp.c
-
-SIZE_OPTIMISED_SRC := $(SIZE_OPTIMISED_SRC) \
-            drivers/bus_i2c_hal_init.c
 
 # check if target.mk supplied
 SRC := $(STARTUP_SRC) $(MCU_COMMON_SRC) $(TARGET_SRC) $(VARIANT_SRC)
